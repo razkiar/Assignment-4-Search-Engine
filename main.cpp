@@ -1,17 +1,57 @@
 #include <iostream>
+#include <exception>
+
+#include "DocumentParser.h"
+#include "UserInterface.h"
 
 using namespace std;
 
-int main()
-{
-    cout << "Usage:\n"
-         << "\tIndex all files in <directory> and store the index in one or several files:\n"
-         << "\tsupersearch index <directory>\n\n"
-         << "\tLoad the existing index and perform the following query:\n"
-         << "\tsupersearch query \"social network PERSON:cramer\"\n\n"
-         << "\tStart a simple text-based user interface that lets the user create an index,\n\tsave/load the index and perform multiple queries:\n"
-         << "\tsupersearch ui\n\n";
+void runApplication(int argc, char **argv);
 
-    cout << "supersearch not implemented yet." << endl; 
+int main(int argc, char **argv) {
+
+    // Encapsulate the main application logic in a try block to catch any exception
+    try {
+        runApplication(argc, argv);
+    // Catch and handle standard exceptions derivced from std::exeption
+    } catch (const std::exception& e) {
+        cerr << "Exception caught in main: " << e.what() << endl;
+        return 1;
+    // Catch-all handler for any other exceptions not derived from std::exception
+    } catch (...) {
+        cerr << "Unknown exception caught in main." << endl;
+        return 1;
+    }
+    // Return 0 to indicate successful execution
     return 0;
+}
+
+void runApplication(int argc, char **argv) {
+    if (argc < 2) {
+        cout << "Usage: [index/query/ui] [additional parameters]" << endl;
+        return;
+    }
+
+    string command = argv[1];
+    UserInterface ui;
+
+    if (command == "index") {
+        if (argc < 3) {
+            cout << "Missing path for index command." << endl;
+            return;
+        }
+        ui.createIndex(argv[2]);
+        ui.writeIndex();
+    } else if (command == "query") {
+        if (argc < 3) {
+            cout << "Missing query string for query command." << endl;
+            return;
+        }
+        ui.readIndex();
+        ui.enterQuery(argv[2], false);
+    } else if (command == "ui") {
+        ui.displayMenu();
+    } else {
+        cout << "Invalid command." << endl;
+    }
 }
