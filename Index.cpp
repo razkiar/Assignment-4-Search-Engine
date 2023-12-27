@@ -1,4 +1,4 @@
-#include "index.h"
+#include "Index.h"
 
 #include <fstream>
 #include <iostream>
