@@ -59,6 +59,8 @@ void DocumentParser::readJsonFile(const std::string &filePath,
     ifs.close();
 }
 
+// processEntities() takes in a reference to a JSON array of entities, document ID and an AVL tree 
+// and inserts the entity name and its corresponding document ID into the AVL tree.
 void DocumentParser::processEntities(const rapidjson::Value& entities, 
                                      const std::string& documentId,
                                      AvlTree<std::string, std::set<std::string>>& entityTree) {
@@ -67,8 +69,9 @@ void DocumentParser::processEntities(const rapidjson::Value& entities,
         entityTree.insert(name, {documentId});
     }
 }
-
-
+ 
+// tokenize() takes in a string and a vector of strings and tokenizes the string, applies Porter2 stemming, 
+// and stores the tokens in the vector.
 void DocumentParser::tokenize(const std::string& content, std::vector<std::string>& tokens) {
     std::istringstream iss(content);
     std::string token;
@@ -81,22 +84,26 @@ void DocumentParser::tokenize(const std::string& content, std::vector<std::strin
         }
     }
 }
-
+ 
+// cleanToken() takes in a string and removes punctuation and converts it to lowercase.
 void DocumentParser::cleanToken(std::string& token) {
     // Remove punctuation and convert to lowercase
     token.erase(std::remove_if(token.begin(), token.end(), [](char c) {
         return std::ispunct(c) || c == '\''; // Remove punctuation and apostrophes
     }), token.end());
-
+ 
     std::transform(token.begin(), token.end(), token.begin(), [](unsigned char c){
         return std::tolower(c); // Convert to lowercase
     });
 }
-
+ 
+// getDocumentCount() returns the total number of documents processed so far.
 int DocumentParser::getDocumentCount() const {
     return documentCount;
 }
-
+ 
+// fileSystem() takes in a directory path and multiple AVL trees and recursively reads all the JSON files 
+// in the directory and populates the AVL trees.
 void DocumentParser::fileSystem(const std::string &directoryPath,
                                 AvlTree<std::string, std::map<std::string, int>> &wordTree,
                                 AvlTree<std::string, std::set<std::string>> &personTree,
@@ -114,7 +121,9 @@ void DocumentParser::fileSystem(const std::string &directoryPath,
     }
     std::cout << "Total documents processed: " << documentCount << std::endl;
 }
-
+ 
+// readStopWords() takes in a file path and an AVL tree and reads all the stop words from the file and 
+// populates the AVL tree.
 void DocumentParser::readStopWords(const std::string& filePath, AvlTree<std::string, std::string>& stopWordsTree) {
     std::ifstream file(filePath);
     std::string word;

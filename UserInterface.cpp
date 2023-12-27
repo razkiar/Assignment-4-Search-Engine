@@ -3,6 +3,7 @@
 using namespace std;
 using namespace chrono;
 
+// This function displays the Super Search menu and handles user input
 void UserInterface::displayMenu()
 {
     int choice = -1;
@@ -33,7 +34,7 @@ void UserInterface::displayMenu()
         // Handle the choice
         switch (choice)
         {
-        case 1:
+        case 1:  // Create index from documents
         {
             string path;
             cout << "Enter the path for documents: ";
@@ -41,13 +42,13 @@ void UserInterface::displayMenu()
             createIndex(path);
             break;
         }
-        case 2:
+        case 2:  // Write index to file
             writeIndex();
             break;
-        case 3:
+        case 3:  // Read index from file
             readIndex();
             break;
-        case 4:
+        case 4:  // Enter a query
         {
             string query;
             cout << "Enter your query: ";
@@ -56,19 +57,20 @@ void UserInterface::displayMenu()
             enterQuery(query, true);
             break;
         }
-        case 5:
+        case 5:  // Output statistics
             outputStatistics();
             break;
-        case 0:
+        case 0:  // Exit
             cout << "Exiting Super Search.\n";
             break;
-        default:
+        default:  // Invalid choice
             cout << "Invalid choice, please try again.\n";
             break;
         }
     }
 }
 
+// This function creates an index of words from the given document path
 void UserInterface::createIndex(const string &path)
 {
     auto start = high_resolution_clock::now();
@@ -82,6 +84,7 @@ void UserInterface::createIndex(const string &path)
     time = duration_cast<microseconds>(stop - start);
 }
 
+// This function writes the index data to files
 void UserInterface::writeIndex() {
     cout << "Writing index to file..." << endl;
     Index index;
@@ -103,7 +106,7 @@ void UserInterface::writeIndex() {
     index.saveDocumentData(filePath, docTree);
 }
 
-
+// This function reads the index data from files
 void UserInterface::readIndex()
 {
     cout << "Reading index from persistence..." << endl;
@@ -115,11 +118,15 @@ void UserInterface::readIndex()
     index.loadDocumentData("docsPersist.txt", docTree);
 }
 
+// Function to parse the query entered by user and output the results
 void UserInterface::enterQuery(const string &choice, bool letOpen)
 {
+    // Create a new Query object
     Query query = Query();
+    // Parse the query using the wordTree, people, orgs and stopWords
     finalDocs = query.parseQuery(choice, wordTree, people, orgs, stopWords);
 
+    // Check if any results were found
     if (finalDocs.empty())
     {
         cout << "No results found" << endl;
@@ -127,9 +134,12 @@ void UserInterface::enterQuery(const string &choice, bool letOpen)
     else
     {
         int i = 0;
+        // Loop through the documents in the finalDocs vector
         for (const auto &d : finalDocs)
         {
+            // Get the document from the docTree
             document doc = docTree.getValues(d.first);
+            // Output the various attributes of the document
             cout << i + 1 << endl;
             cout << "Title: " << doc.title << endl;
             cout << "UUID: " << doc.identifier << endl;
@@ -137,42 +147,53 @@ void UserInterface::enterQuery(const string &choice, bool letOpen)
             cout << "Published: " << doc.publicationDate << endl;
             cout << endl;
             i++;
+            // Break out of the loop after 15 iterations
             if (i >= 15)
                 break;
         }
 
+        // Let the user open the document if letOpen is true
         while (letOpen)
         {
             cout << "Enter the document number you want to view. Enter 0 to return to menu" << endl;
             string num;
             cin >> num;
             int numInt = stoi(num);
+            // Break out of the loop if the user enters 0
             if (numInt == 0)
                 break;
+            // Check if the entered number is valid
             if (numInt < 0 || static_cast<size_t>(numInt) > finalDocs.size())
             {
                 cout << "Please enter a valid document number" << endl;
                 continue;
             }
+            // Output the content of the document
             cout << "Text: " << docTree.getValues(finalDocs.at(numInt - 1).first).content << endl;
         }
     }
 }
 
+// Function to output the statistics
 void UserInterface::outputStatistics()
 {
     cout << "Statistics:" << endl;
+    // Output the time taken to index
     cout << "Time taken to index: " << time.count() << " microseconds" << endl;
+    // Output the total number of unique words
     cout << "Total Number of Unique words: " << wordTree.size() << endl;
+    // Output the total number of documents
     cout << "Total Number of Documents: " << numDocs << endl;
+    // Output the total number of people
     cout << "Total Number of People: " << people.size() << endl;
+    // Output the total number of organisations
     cout << "Total Number of Orgs: " << orgs.size() << endl;
 
     // Resetting the tree after statistics output
     wordTree.makeEmpty();
 }
 
+// Function to read the query results
 const vector<pair<string, int>>& UserInterface::readQueryResults() const {
     return finalDocs;
 }
-
